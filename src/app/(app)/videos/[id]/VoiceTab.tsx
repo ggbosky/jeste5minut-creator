@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import Link from "next/link";
 import { useState } from "react";
 import { Badge, Button, Card, Empty, api, useCopy, useToast } from "@/components/ui";
@@ -19,7 +20,7 @@ export function VoiceTab({ ctx }: { ctx: Ctx }) {
   const dict = ctx.rules.pronunciation;
 
   const setProfile = async (id: number) => {
-    await api(`/api/videos/${data.video.id}`, { method: "PATCH", body: { voice_profile_id: id } });
+    await api(`${API}/videos/${data.video.id}`, { method: "PATCH", body: { voice_profile_id: id } });
     await ctx.reload();
   };
 
@@ -90,10 +91,10 @@ export function VoiceTab({ ctx }: { ctx: Ctx }) {
         </Card>
         <Card title="Soubory ke stažení" subtitle="Vždy dva oddělené výstupy">
           <div className="space-y-2">
-            <a className="surface flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:border-accent" href={`/api/videos/${data.video.id}/files/elevenlabs`}>
+            <a className="surface flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:border-accent" href={`${API}/videos/${data.video.id}/files/elevenlabs`}>
               <span><b>ElevenLabs.md</b><span className="text-3 block text-xs">pro tebe — hlas, části, tagy, popisek</span></span>↓
             </a>
-            <a className="surface flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:border-accent" href={`/api/videos/${data.video.id}/files/strih`}>
+            <a className="surface flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:border-accent" href={`${API}/videos/${data.video.id}/files/strih`}>
               <span><b>Strih.md</b><span className="text-3 block text-xs">pro renderer — bez nastavení ElevenLabs</span></span>↓
             </a>
           </div>
@@ -107,7 +108,7 @@ export function VoiceTab({ ctx }: { ctx: Ctx }) {
         <Button variant="primary" className="w-full" loading={busy} disabled={!data.video.script_locked || !ctx.canEdit} onClick={async () => {
           setBusy(true);
           try {
-            if (data.video.status === "approved") await api(`/api/videos/${data.video.id}`, { method: "PATCH", body: { status: "awaiting_audio" } });
+            if (data.video.status === "approved") await api(`${API}/videos/${data.video.id}`, { method: "PATCH", body: { status: "awaiting_audio" } });
             await ctx.reload();
             ctx.goTab("audio");
           } catch (e) {

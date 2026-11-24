@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "types": ["vite/client"],
+    "paths": {
+      "@/*": ["../src/*"],
+      "next/link": ["./src/shims/link.tsx"],
+      "next/navigation": ["./src/shims/navigation.ts"]
+    }
+  },
+  "include": ["src", "sw", "../src/types.d.ts"]
+}

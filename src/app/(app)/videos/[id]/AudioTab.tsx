@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useRef, useState } from "react";
 import { Badge, Button, Card, Empty, api, cx, useToast } from "@/components/ui";
 import { words } from "@/lib/script";
@@ -20,7 +21,7 @@ export function AudioTab({ ctx }: { ctx: Ctx }) {
     if (part) fd.append("part", String(part));
     setBusy(`up${part ?? "all"}`);
     try {
-      const r = await api<{ added: { part: number; name: string; duration: number }[] }>(`/api/videos/${data.video.id}/audio`, { form: fd });
+      const r = await api<{ added: { part: number; name: string; duration: number }[] }>(`${API}/videos/${data.video.id}/audio`, { form: fd });
       toast("ok", r.added.map((a) => `cast${a.part}: ${a.duration.toFixed(1)} s`).join(", "));
       await ctx.reload();
     } catch (e) {
@@ -32,7 +33,7 @@ export function AudioTab({ ctx }: { ctx: Ctx }) {
   async function generate(part: number) {
     setBusy(`tts${part}`);
     try {
-      await api(`/api/videos/${data.video.id}/tts`, { body: { part, count } });
+      await api(`${API}/videos/${data.video.id}/tts`, { body: { part, count } });
       toast("ok", `Vygenerováno ${count} takeů pro část ${part}`);
       await ctx.reload();
     } catch (e) {
@@ -126,14 +127,14 @@ export function AudioTab({ ctx }: { ctx: Ctx }) {
                     return (
                       <li key={t.id} className={cx("flex flex-wrap items-center gap-3 px-5 py-3", t.selected && "bg-emerald-50/60 dark:bg-emerald-950/20")}>
                         <label className="flex items-center gap-2 text-sm font-semibold">
-                          <input type="radio" name={`part${p.part}`} checked={!!t.selected} disabled={!ctx.canEdit} onChange={async () => { await api(`/api/videos/${data.video.id}/audio/${t.id}`, { method: "PATCH", body: { selected: true } }); await ctx.reload(); }} />
+                          <input type="radio" name={`part${p.part}`} checked={!!t.selected} disabled={!ctx.canEdit} onChange={async () => { await api(`${API}/videos/${data.video.id}/audio/${t.id}`, { method: "PATCH", body: { selected: true } }); await ctx.reload(); }} />
                           {t.selected ? "Použít ✓" : "Použít"}
                         </label>
-                        <audio controls preload="none" src={`/api/videos/${data.video.id}/audio/${t.id}`} className="h-9 min-w-[220px] flex-1" />
+                        <audio controls preload="none" src={`${API}/videos/${data.video.id}/audio/${t.id}`} className="h-9 min-w-[220px] flex-1" />
                         <span className="text-2 max-w-[220px] truncate text-xs" title={t.original_name}>{t.original_name}</span>
                         <Badge color={t.source === "tts" ? "#8B5CF6" : "#26406E"}>{t.source === "tts" ? `API${t.meta?.profile ? ` · ${t.meta.profile}` : ""}` : t.source === "demo" ? "demo" : "nahráno"}</Badge>
                         <span className={cx("text-xs font-bold tabular-nums", off > 0.35 && "text-amber-600")}>{t.duration_s?.toFixed(1)} s</span>
-                        <Button size="sm" variant="ghost" disabled={!ctx.canEdit} onClick={async () => { if (confirm("Smazat take?")) { await api(`/api/videos/${data.video.id}/audio/${t.id}`, { method: "DELETE" }); await ctx.reload(); } }}>✕</Button>
+                        <Button size="sm" variant="ghost" disabled={!ctx.canEdit} onClick={async () => { if (confirm("Smazat take?")) { await api(`${API}/videos/${data.video.id}/audio/${t.id}`, { method: "DELETE" }); await ctx.reload(); } }}>✕</Button>
                       </li>
                     );
                   })}

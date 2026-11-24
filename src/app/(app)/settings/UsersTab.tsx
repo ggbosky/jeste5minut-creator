@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useEffect, useState } from "react";
 import { Badge, Button, Card, Field, Modal, api, fmtDate, useToast } from "@/components/ui";
 import { useSettings } from "./useSettings";
@@ -17,13 +18,13 @@ export function UsersTab({ meId }: { meId: number }) {
   const [f, setF] = useState({ name: "", email: "", password: "", role: "editor" });
   const [busy, setBusy] = useState(false);
   const sec = useSettings("security");
-  const load = () => api<{ users: U[] }>("/api/users").then((r) => setUsers(r.users));
+  const load = () => api<{ users: U[] }>(`${API}/users`).then((r) => setUsers(r.users));
   useEffect(() => {
     load();
   }, []);
   const patch = async (id: number, b: Record<string, unknown>, ok = "Uloženo") => {
     try {
-      await api(`/api/users/${id}`, { method: "PATCH", body: b });
+      await api(`${API}/users/${id}`, { method: "PATCH", body: b });
       toast("ok", ok);
       await load();
     } catch (e) {
@@ -53,7 +54,7 @@ export function UsersTab({ meId }: { meId: number }) {
                         <Button size="sm" variant="ghost" onClick={() => { const p = prompt(`Nové heslo pro ${u.email}:`); if (p) patch(u.id, { password: p }, "Heslo nastaveno"); }}>Heslo</Button>
                         {u.totp_enabled ? <Button size="sm" variant="ghost" onClick={() => confirm("Vypnout 2FA tomuto uživateli?") && patch(u.id, { reset_2fa: true }, "2FA resetováno")}>Reset 2FA</Button> : null}
                         <Button size="sm" variant="ghost" onClick={() => patch(u.id, { active: !u.active }, u.active ? "Deaktivováno" : "Aktivováno")}>{u.active ? "Deaktivovat" : "Aktivovat"}</Button>
-                        <Button size="sm" variant="ghost" onClick={async () => { if (confirm(`Smazat ${u.email}?`)) { await api(`/api/users/${u.id}`, { method: "DELETE" }); load(); } }}>Smazat</Button>
+                        <Button size="sm" variant="ghost" onClick={async () => { if (confirm(`Smazat ${u.email}?`)) { await api(`${API}/users/${u.id}`, { method: "DELETE" }); load(); } }}>Smazat</Button>
                       </>
                     )}
                   </td>
@@ -77,7 +78,7 @@ export function UsersTab({ meId }: { meId: number }) {
           e.preventDefault();
           setBusy(true);
           try {
-            await api("/api/users", { body: f });
+            await api(`${API}/users`, { body: f });
             toast("ok", "Uživatel vytvořen — předej mu heslo bezpečnou cestou");
             setOpen(false);
             setF({ name: "", email: "", password: "", role: "editor" });

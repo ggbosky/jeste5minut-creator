@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useEffect, useState } from "react";
 import { Badge, Button, Card, Field, Modal, api, fmtDate, useToast } from "@/components/ui";
 import { PROVIDERS } from "@/lib/constants";
@@ -21,7 +22,7 @@ export function KeysTab({ isAdmin }: { isAdmin: boolean }) {
   const [show, setShow] = useState(false);
 
   const load = async () => {
-    const r = await api<{ keys: K[]; status: S[] }>("/api/keys");
+    const r = await api<{ keys: K[]; status: S[] }>(`${API}/keys`);
     setKeys(r.keys);
     setStatus(r.status);
   };
@@ -68,7 +69,7 @@ export function KeysTab({ isAdmin }: { isAdmin: boolean }) {
                 {list.map((k) => (
                   <li key={k.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
                     <label className="flex items-center gap-2">
-                      <input type="radio" name={`active-${p.key}`} checked={!!k.is_active} disabled={!isAdmin} onChange={() => act(`a${k.id}`, () => api(`/api/keys/${k.id}`, { method: "PATCH", body: { active: true } }), `Aktivní: ${k.label}`)} />
+                      <input type="radio" name={`active-${p.key}`} checked={!!k.is_active} disabled={!isAdmin} onChange={() => act(`a${k.id}`, () => api(`${API}/keys/${k.id}`, { method: "PATCH", body: { active: true } }), `Aktivní: ${k.label}`)} />
                       <span className="font-semibold">{k.label}</span>
                     </label>
                     <code className="text-3 rounded bg-[var(--surface-2)] px-2 py-0.5 text-xs">••••••••{k.last4}</code>
@@ -77,10 +78,10 @@ export function KeysTab({ isAdmin }: { isAdmin: boolean }) {
                     {isAdmin && (
                       <>
                         <Button size="sm" loading={busy === `t${k.id}`} onClick={() => act(`t${k.id}`, async () => {
-                          const r = await api<{ ok: boolean; message: string }>(`/api/keys/${k.id}/test`, { method: "POST" });
+                          const r = await api<{ ok: boolean; message: string }>(`${API}/keys/${k.id}/test`, { method: "POST" });
                           toast(r.ok ? "ok" : "error", r.message);
                         })}>Otestovat</Button>
-                        <Button size="sm" variant="ghost" onClick={() => confirm(`Smazat klíč „${k.label}“?`) && act(`d${k.id}`, () => api(`/api/keys/${k.id}`, { method: "DELETE" }), "Klíč smazán")}>Smazat</Button>
+                        <Button size="sm" variant="ghost" onClick={() => confirm(`Smazat klíč „${k.label}“?`) && act(`d${k.id}`, () => api(`${API}/keys/${k.id}`, { method: "DELETE" }), "Klíč smazán")}>Smazat</Button>
                       </>
                     )}
                   </li>
@@ -97,9 +98,9 @@ export function KeysTab({ isAdmin }: { isAdmin: boolean }) {
           onSubmit={(e) => {
             e.preventDefault();
             act("add", async () => {
-              const r = await api<{ id: number }>("/api/keys", { body: { provider: adding, ...form } });
+              const r = await api<{ id: number }>(`${API}/keys`, { body: { provider: adding, ...form } });
               setAdding(null);
-              const t = await api<{ ok: boolean; message: string }>(`/api/keys/${r.id}/test`, { method: "POST" });
+              const t = await api<{ ok: boolean; message: string }>(`${API}/keys/${r.id}/test`, { method: "POST" });
               toast(t.ok ? "ok" : "error", t.ok ? `Klíč uložen a funguje · ${t.message}` : `Klíč uložen, ale test selhal: ${t.message}`);
             });
           }}

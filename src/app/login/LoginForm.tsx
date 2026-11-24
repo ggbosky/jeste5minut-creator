@@ -1,4 +1,5 @@
 "use client";
+import { API, STATIC, go } from "@/lib/nav";
 import { useState } from "react";
 import { Button, Field, api } from "@/components/ui";
 
@@ -10,9 +11,10 @@ export function LoginForm() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const go = () => {
-    const next = new URLSearchParams(window.location.search).get("next");
-    window.location.href = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const goNext = () => {
+    const q = STATIC ? window.location.hash.split("?")[1] ?? "" : window.location.search;
+    const next = new URLSearchParams(q).get("next");
+    go(next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
   };
 
   async function submit(e: React.FormEvent) {
@@ -21,12 +23,12 @@ export function LoginForm() {
     setBusy(true);
     try {
       if (step === "pw") {
-        const r = await api<{ twofa?: boolean }>("/api/auth/login", { body: { email, password } });
+        const r = await api<{ twofa?: boolean }>(`${API}/auth/login`, { body: { email, password } });
         if (r.twofa) setStep("2fa");
-        else go();
+        else goNext();
       } else {
-        await api("/api/auth/2fa", { body: { code } });
-        go();
+        await api(`${API}/auth/2fa`, { body: { code } });
+        goNext();
       }
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));

@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -17,7 +18,7 @@ export function LibraryClient({ chapters, usage, ebook }: { chapters: Ch[]; usag
     fd.append("file", f);
     setBusy(true);
     try {
-      await api("/api/assets/ebook_pdf", { form: fd });
+      await api(`${API}/assets/ebook_pdf`, { form: fd });
       toast("ok", "E-book nahrán — Claude ho bude číst při psaní scénářů");
       router.refresh();
     } catch (e) {
@@ -62,7 +63,7 @@ export function LibraryClient({ chapters, usage, ebook }: { chapters: Ch[]; usag
                     </Field>
                     <div className="flex justify-end gap-2">
                       <Button onClick={() => setEdit(null)}>Zrušit</Button>
-                      <Button variant="primary" onClick={async () => { await api(`/api/chapters/${c.n}`, { method: "PUT", body: edit }); setEdit(null); toast("ok", "Uloženo"); router.refresh(); }}>Uložit</Button>
+                      <Button variant="primary" onClick={async () => { await api(`${API}/chapters/${c.n}`, { method: "PUT", body: edit }); setEdit(null); toast("ok", "Uloženo"); router.refresh(); }}>Uložit</Button>
                     </div>
                   </div>
                 )}
@@ -77,8 +78,8 @@ export function LibraryClient({ chapters, usage, ebook }: { chapters: Ch[]; usag
                 <p className="font-semibold">{ebook.original_name}</p>
                 <p className="text-3 text-xs">{(ebook.size / 1e6).toFixed(1)} MB · {fmtDate(ebook.updated_at)}</p>
                 <div className="flex gap-2">
-                  <a href="/api/assets/ebook_pdf" target="_blank" className="surface inline-flex h-8 items-center rounded-[10px] px-3 text-[13px] font-semibold">Otevřít</a>
-                  <Button size="sm" variant="ghost" onClick={async () => { if (confirm("Odebrat PDF?")) { await api("/api/assets/ebook_pdf", { method: "DELETE" }); router.refresh(); } }}>Odebrat</Button>
+                  <a href={`${API}/assets/ebook_pdf`} target="_blank" className="surface inline-flex h-8 items-center rounded-[10px] px-3 text-[13px] font-semibold">Otevřít</a>
+                  <Button size="sm" variant="ghost" onClick={async () => { if (confirm("Odebrat PDF?")) { await api(`${API}/assets/ebook_pdf`, { method: "DELETE" }); router.refresh(); } }}>Odebrat</Button>
                 </div>
               </div>
             ) : (

@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -23,7 +24,7 @@ export function NewVideo({ chapters, backlog, hasKey }: { chapters: { n: number;
   async function propose(count: number, save = false) {
     setBusy(save ? "bulk" : "propose");
     try {
-      const r = await api<{ topics: Topic[] }>("/api/topics/generate", { body: { count, chapter: chapter ? Number(chapter) : null, hook_type: hook || null, custom, save } });
+      const r = await api<{ topics: Topic[] }>(`${API}/topics/generate`, { body: { count, chapter: chapter ? Number(chapter) : null, hook_type: hook || null, custom, save } });
       if (save) {
         toast("ok", `${r.topics.length} témat uloženo do zásobníku`);
         router.push("/topics");
@@ -38,7 +39,7 @@ export function NewVideo({ chapters, backlog, hasKey }: { chapters: { n: number;
   async function create(t: { title: string; chapter: number; hook_type: string; angle: string; topic_id?: number }, sample = false) {
     setBusy(sample ? "sample" : t.title);
     try {
-      const r = await api<{ id: number; warning?: string }>("/api/videos", { body: { ...t, generate: autoGen && !sample, sample } });
+      const r = await api<{ id: number; warning?: string }>(`${API}/videos`, { body: { ...t, generate: autoGen && !sample, sample } });
       if (r.warning) toast("error", `Video vytvořeno, ale scénář se nevygeneroval: ${r.warning}`);
       router.push(`/videos/${r.id}?tab=script`);
     } catch (e) {

@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -15,7 +16,7 @@ export function TopicsClient({ chapters, hasKey }: { chapters: { n: number; titl
   const [gen, setGen] = useState({ count: 10, chapter: "", hook_type: "", custom: "" });
   const [manual, setManual] = useState({ title: "", chapter: 1, hook_type: "scene", angle: "", hook_line: "" });
   const [fCh, setFCh] = useState("");
-  const load = () => api<{ topics: T[] }>("/api/topics").then((r) => setTopics(r.topics));
+  const load = () => api<{ topics: T[] }>(`${API}/topics`).then((r) => setTopics(r.topics));
   useEffect(() => {
     load();
   }, []);
@@ -44,7 +45,7 @@ export function TopicsClient({ chapters, hasKey }: { chapters: { n: number; titl
                   <div className="flex items-center gap-2">
                     <Badge color="#26406E">Kap. {t.chapter}</Badge>
                     <Badge color="#FB6720">{HOOK_TYPES.find((h) => h.key === t.hook_type)?.label}</Badge>
-                    <button className="text-3 ml-auto text-sm hover:text-red-600" title="Smazat" onClick={async () => { await api(`/api/topics/${t.id}`, { method: "DELETE" }); load(); }}>✕</button>
+                    <button className="text-3 ml-auto text-sm hover:text-red-600" title="Smazat" onClick={async () => { await api(`${API}/topics/${t.id}`, { method: "DELETE" }); load(); }}>✕</button>
                   </div>
                   <p className="mt-2 font-extrabold">{t.title}</p>
                   {t.hook_line && <p className="mt-1 text-sm italic">„{t.hook_line}“</p>}
@@ -52,7 +53,7 @@ export function TopicsClient({ chapters, hasKey }: { chapters: { n: number; titl
                   <Button size="sm" variant="primary" className="mt-3" loading={busy === `v${t.id}`} onClick={async () => {
                     setBusy(`v${t.id}`);
                     try {
-                      const r = await api<{ id: number; warning?: string }>("/api/videos", { body: { topic_id: t.id, generate: hasKey } });
+                      const r = await api<{ id: number; warning?: string }>(`${API}/videos`, { body: { topic_id: t.id, generate: hasKey } });
                       if (r.warning) toast("error", r.warning);
                       router.push(`/videos/${r.id}?tab=script`);
                     } catch (e) {
@@ -100,7 +101,7 @@ export function TopicsClient({ chapters, hasKey }: { chapters: { n: number; titl
               <Button variant="primary" className="w-full" disabled={!hasKey} loading={busy === "gen"} onClick={async () => {
                 setBusy("gen");
                 try {
-                  const r = await api<{ topics: unknown[] }>("/api/topics/generate", { body: { count: gen.count, chapter: gen.chapter ? Number(gen.chapter) : null, hook_type: gen.hook_type || null, custom: gen.custom, save: true } });
+                  const r = await api<{ topics: unknown[] }>(`${API}/topics/generate`, { body: { count: gen.count, chapter: gen.chapter ? Number(gen.chapter) : null, hook_type: gen.hook_type || null, custom: gen.custom, save: true } });
                   toast("ok", `Přidáno ${r.topics.length} témat`);
                   load();
                 } catch (e) {
@@ -115,7 +116,7 @@ export function TopicsClient({ chapters, hasKey }: { chapters: { n: number; titl
           <Card title="Přidat ručně">
             <form className="space-y-3" onSubmit={async (e) => {
               e.preventDefault();
-              await api("/api/topics", { body: { topics: [manual] } });
+              await api(`${API}/topics`, { body: { topics: [manual] } });
               setManual({ ...manual, title: "", angle: "", hook_line: "" });
               load();
             }}>

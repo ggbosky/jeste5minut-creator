@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Badge, Button, Card, Field, PageHeader, Slider, Tabs, Toggle, api, useCopy, useToast } from "@/components/ui";
@@ -36,7 +37,7 @@ function VoiceLab({ profiles, enabled }: { profiles: VoiceProfile[]; enabled: bo
   const gen = async (i: number) => {
     setBusy(i);
     try {
-      const res = await fetch("/api/elevenlabs/tts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text, ...cfgs[i] }) });
+      const res = await fetch(`${API}/elevenlabs/tts`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text, ...cfgs[i] }) });
       if (!res.ok) throw new Error((await res.json()).error);
       const u = URL.createObjectURL(await res.blob());
       setUrls((x) => x.map((y, j) => (j === i ? u : y)));
@@ -122,7 +123,7 @@ function LlmLab({ enabled, llm }: { enabled: boolean; llm: Settings["llm"] }) {
           <Button variant="primary" loading={busy} disabled={!enabled} onClick={async () => {
             setBusy(true);
             try {
-              setOut(await api("/api/llm/playground", { body: f }));
+              setOut(await api(`${API}/llm/playground`, { body: f }));
             } catch (e) {
               toast("error", (e as Error).message);
             } finally {

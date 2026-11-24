@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useEffect, useState } from "react";
 import { Badge, Card, Spinner, api } from "@/components/ui";
 
@@ -7,7 +8,7 @@ type H = { node: string; ffmpeg: string | null; data_dir: string; data_size_mb: 
 export function SystemTab({ isAdmin }: { isAdmin: boolean }) {
   const [h, setH] = useState<H | null>(null);
   useEffect(() => {
-    api<H>("/api/system/health").then(setH);
+    api<H>(`${API}/system/health`).then(setH);
   }, []);
   if (!h) return <Spinner />;
   const rows: [string, React.ReactNode][] = [
@@ -33,7 +34,7 @@ export function SystemTab({ isAdmin }: { isAdmin: boolean }) {
       </Card>
       {isAdmin && (
         <Card title="Záloha" subtitle="JSON se scénáři, nastavením, tématy a historií (bez klíčů, hesel a souborů). Pro úplnou zálohu zkopíruj celou datovou složku.">
-          <a href="/api/system/backup" className="inline-flex h-10 items-center rounded-[10px] bg-accent px-4 text-sm font-semibold text-white">Stáhnout zálohu</a>
+          <a href={`${API}/system/backup`} className="inline-flex h-10 items-center rounded-[10px] bg-accent px-4 text-sm font-semibold text-white">Stáhnout zálohu</a>
         </Card>
       )}
     </div>

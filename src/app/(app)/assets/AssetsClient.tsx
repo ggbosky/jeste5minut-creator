@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Badge, Button, Card, Field, PageHeader, Tabs, api, cx, useToast } from "@/components/ui";
@@ -66,7 +67,7 @@ export function AssetsClient({ poses, cover, logo, cfg, specCfg }: { poses: Pose
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-base bg-[var(--surface-2)] px-4 py-3 text-sm">
               <p className="text-2">Zdroj: JPG 1536 × 2752 na čistě zeleném pozadí #00FF00, postava od pasu nahoru, hlava všude na stejném místě. Chroma key: prahy 15–70, eroze 5 px, rozmazání 1,2 px, despill. Bez nahraných póz renderer použije zástupnou vektorovou postavu.</p>
-              <Button size="sm" loading={busy === "rekey"} onClick={async () => { setBusy("rekey"); try { await api("/api/poses/rekey", { method: "POST" }); toast("ok", "Pózy znovu předklíčovány"); router.refresh(); } catch (e) { toast("error", (e as Error).message); } finally { setBusy(null); } }}>Předklíčovat znovu</Button>
+              <Button size="sm" loading={busy === "rekey"} onClick={async () => { setBusy("rekey"); try { await api(`${API}/poses/rekey`, { method: "POST" }); toast("ok", "Pózy znovu předklíčovány"); router.refresh(); } catch (e) { toast("error", (e as Error).message); } finally { setBusy(null); } }}>Předklíčovat znovu</Button>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {poses.map((p) => (
@@ -74,7 +75,7 @@ export function AssetsClient({ poses, cover, logo, cfg, specCfg }: { poses: Pose
                   <div className="checker relative flex aspect-[3/4] items-end justify-center overflow-hidden rounded-t-2xl">
                     {p.processed ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={`/api/poses/${p.key}?v=${encodeURIComponent(p.updated_at ?? "")}`} alt={p.key} className="h-full w-full object-contain object-bottom" />
+                      <img src={`${API}/poses/${p.key}?v=${encodeURIComponent(p.updated_at ?? "")}`} alt={p.key} className="h-full w-full object-contain object-bottom" />
                     ) : (
                       <span className="text-3 m-auto text-sm">nenahráno</span>
                     )}
@@ -87,15 +88,15 @@ export function AssetsClient({ poses, cover, logo, cfg, specCfg }: { poses: Pose
                     </div>
                     <p className="text-3 text-xs">{p.usage}</p>
                     <Field label="Soubor v projektu" hint="mapování názvu ze scénáře na soubor">
-                      <input className="input h-8 py-1 text-xs" defaultValue={p.file_name} onBlur={(e) => e.target.value !== p.file_name && api(`/api/poses/${p.key}`, { method: "PATCH", body: { file_name: e.target.value } }).then(() => toast("ok", "Mapování uloženo"))} />
+                      <input className="input h-8 py-1 text-xs" defaultValue={p.file_name} onBlur={(e) => e.target.value !== p.file_name && api(`${API}/poses/${p.key}`, { method: "PATCH", body: { file_name: e.target.value } }).then(() => toast("ok", "Mapování uloženo"))} />
                     </Field>
                     <div className="flex gap-2">
                       <label className={cx("inline-flex h-8 flex-1 cursor-pointer items-center justify-center rounded-[10px] bg-accent px-3 text-[13px] font-semibold text-white", busy === p.key && "opacity-50")}>
                         {busy === p.key ? "Zpracovávám…" : p.processed ? "Nahradit" : "Nahrát"}
-                        <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(e) => e.target.files?.[0] && upload(`/api/poses/${p.key}`, e.target.files[0], p.key)} />
+                        <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(e) => e.target.files?.[0] && upload(`${API}/poses/${p.key}`, e.target.files[0], p.key)} />
                       </label>
-                      {p.source ? <a href={`/api/poses/${p.key}?source=1`} target="_blank" className="surface inline-flex h-8 items-center rounded-[10px] px-2 text-xs font-semibold">zdroj</a> : null}
-                      {p.processed ? <Button size="sm" variant="ghost" onClick={async () => { if (confirm("Odebrat pózu?")) { await api(`/api/poses/${p.key}`, { method: "DELETE" }); router.refresh(); } }}>✕</Button> : null}
+                      {p.source ? <a href={`${API}/poses/${p.key}?source=1`} target="_blank" className="surface inline-flex h-8 items-center rounded-[10px] px-2 text-xs font-semibold">zdroj</a> : null}
+                      {p.processed ? <Button size="sm" variant="ghost" onClick={async () => { if (confirm("Odebrat pózu?")) { await api(`${API}/poses/${p.key}`, { method: "DELETE" }); router.refresh(); } }}>✕</Button> : null}
                     </div>
                   </div>
                 </Card>
@@ -146,15 +147,15 @@ export function AssetsClient({ poses, cover, logo, cfg, specCfg }: { poses: Pose
                 <div className="checker flex h-64 items-center justify-center rounded-xl">
                   {upd ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={`/api/assets/${k}?v=${encodeURIComponent(upd as string)}`} alt={label as string} className="max-h-60 max-w-full object-contain" />
+                    <img src={`${API}/assets/${k}?v=${encodeURIComponent(upd as string)}`} alt={label as string} className="max-h-60 max-w-full object-contain" />
                   ) : <span className="text-3 text-sm">nenahráno — zástupná karta</span>}
                 </div>
                 <div className="mt-3 flex gap-2">
                   <label className="inline-flex h-8 cursor-pointer items-center rounded-[10px] bg-accent px-3 text-[13px] font-semibold text-white">
                     {busy === k ? "Nahrávám…" : "Nahrát obrázek"}
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && upload(`/api/assets/${k}`, e.target.files[0], k as string)} />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && upload(`${API}/assets/${k}`, e.target.files[0], k as string)} />
                   </label>
-                  {upd ? <Button size="sm" variant="ghost" onClick={async () => { await api(`/api/assets/${k}`, { method: "DELETE" }); router.refresh(); }}>Odebrat</Button> : null}
+                  {upd ? <Button size="sm" variant="ghost" onClick={async () => { await api(`${API}/assets/${k}`, { method: "DELETE" }); router.refresh(); }}>Odebrat</Button> : null}
                 </div>
               </Card>
             ))}

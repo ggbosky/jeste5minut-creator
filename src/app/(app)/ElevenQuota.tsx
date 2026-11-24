@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useEffect, useState } from "react";
 import { api } from "@/components/ui";
 
@@ -6,7 +7,7 @@ export function ElevenQuota({ enabled }: { enabled: boolean }) {
   const [d, setD] = useState<{ tier: string; character_count: number; character_limit: number; next_reset: string | null } | null>(null);
   const [err, setErr] = useState("");
   useEffect(() => {
-    if (enabled) api<typeof d>("/api/elevenlabs/subscription").then(setD).catch((e) => setErr(e.message));
+    if (enabled) api<typeof d>(`${API}/elevenlabs/subscription`).then(setD).catch((e) => setErr(e.message));
   }, [enabled]);
   if (!enabled) return <p className="text-3 text-xs">Kvóta ElevenLabs se zobrazí po přidání klíče.</p>;
   if (err) return <p className="text-xs text-red-600">ElevenLabs: {err}</p>;

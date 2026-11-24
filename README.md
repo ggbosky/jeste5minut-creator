@@ -73,6 +73,30 @@ npm run render -- <video_id>   # nová verze existujícího videa
 npm run render -- --demo       # ukázkové video se syntetickým audiem (test pipeline)
 ```
 
+## Statická verze — GitHub Pages
+
+Celá aplikace běží i bez serveru, čistě v prohlížeči: **https://ggbosky.github.io/jeste5minut-creator/**
+
+| Serverová verze (Next.js) | Statická verze (GitHub Pages) |
+|---|---|
+| SQLite + soubory na serveru | IndexedDB v prohlížeči (data jen na tomto zařízení) |
+| API na serveru | service worker (`web/sw/`) obsluhuje stejné `api/*` endpointy |
+| render přes ffmpeg | render přes WebCodecs (H.264 + AAC) a mp4-muxer — v Chrome/Edge |
+| hesla scrypt, klíče AES-GCM | hesla PBKDF2, klíče AES-GCM v trezoru zabaleném heslem uživatele |
+| Claude a ElevenLabs volá server | volání jdou přímo z prohlížeče na api.anthropic.com a api.elevenlabs.io |
+
+Omezení statické verze: přihlášení chrání data jen v rámci jednoho prohlížeče (není to serverové zabezpečení),
+render běží v otevřené kartě, data se nesdílí mezi zařízeními (zálohu stáhneš v Nastavení → Systém).
+Firefox zatím neumí kódovat AAC, audio pak bude Opus — pro Instagram použij Chrome nebo Edge.
+
+```bash
+npm run web:build     # → dist-web/
+npm run web:preview   # http://localhost:4173
+```
+
+Nasazení: workflow `.github/workflows/pages.yml` při pushi do `main` sestaví `dist-web/` a nasadí ho.
+Jednou je potřeba v repozitáři zapnout **Settings → Pages → Source: GitHub Actions**.
+
 ## Architektura
 
 | Část | Kde | Poznámka |

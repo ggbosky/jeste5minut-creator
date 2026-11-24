@@ -1,4 +1,5 @@
 "use client";
+import { API, go } from "@/lib/nav";
 import { useState } from "react";
 import { Button, Field, api } from "@/components/ui";
 
@@ -14,8 +15,8 @@ export function SetupForm() {
     if (f.password !== f.password2) return setErr("Hesla se neshodují.");
     setBusy(true);
     try {
-      await api("/api/auth/setup", { body: f });
-      window.location.href = "/";
+      await api(`${API}/auth/setup`, { body: f });
+      go("/");
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {

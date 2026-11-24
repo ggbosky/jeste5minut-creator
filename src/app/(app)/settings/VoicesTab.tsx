@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useEffect, useRef, useState } from "react";
 import { Badge, Button, Card, Field, Slider, Toggle, api, cx, useToast } from "@/components/ui";
 import { ELEVEN_MODELS } from "@/lib/constants";
@@ -21,7 +22,7 @@ export function VoicesTab() {
   const [dirty, setDirty] = useState(false);
 
   const load = async (keep?: number) => {
-    const r = await api<{ profiles: VoiceProfile[] }>("/api/voices");
+    const r = await api<{ profiles: VoiceProfile[] }>(`${API}/voices`);
     setProfiles(r.profiles);
     const id = keep ?? sel ?? r.profiles[0]?.id ?? null;
     setSel(id);
@@ -36,7 +37,7 @@ export function VoicesTab() {
     setBusy("voices");
     setVErr("");
     try {
-      setVoices((await api<{ voices: ElVoice[] }>("/api/elevenlabs/voices")).voices);
+      setVoices((await api<{ voices: ElVoice[] }>(`${API}/elevenlabs/voices`)).voices);
     } catch (e) {
       setVErr((e as Error).message);
     } finally {
@@ -52,7 +53,7 @@ export function VoicesTab() {
     if (!edit) return;
     setBusy("save");
     try {
-      await api(`/api/voices/${edit.id}`, { method: "PATCH", body: edit });
+      await api(`${API}/voices/${edit.id}`, { method: "PATCH", body: edit });
       toast("ok", "Profil uložen");
       await load(edit.id);
     } catch (e) {
@@ -65,7 +66,7 @@ export function VoicesTab() {
     if (!edit) return;
     setBusy("test");
     try {
-      const res = await fetch("/api/elevenlabs/tts", {
+      const res = await fetch(`${API}/elevenlabs/tts`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ text: testText, voice_id: edit.voice_id, model_id: edit.model_id, stability: edit.stability, similarity: edit.similarity, style: edit.style, speed: edit.speed, speaker_boost: !!edit.speaker_boost, use_tags: !!edit.use_tags }),
@@ -88,7 +89,7 @@ export function VoicesTab() {
 
   return (
     <div className="grid gap-4 xl:grid-cols-[260px_1fr]">
-      <Card title="Profily hlasu" pad={false} actions={<Button size="sm" onClick={async () => { const r = await api<{ id: number }>("/api/voices", { body: { name: "Nový profil" } }); await load(r.id); }}>+ Nový</Button>}>
+      <Card title="Profily hlasu" pad={false} actions={<Button size="sm" onClick={async () => { const r = await api<{ id: number }>(`${API}/voices`, { body: { name: "Nový profil" } }); await load(r.id); }}>+ Nový</Button>}>
         <ul className="p-2">
           {profiles.map((p) => (
             <li key={p.id}>
@@ -110,8 +111,8 @@ export function VoicesTab() {
             title={edit.name}
             actions={
               <>
-                {!edit.is_default && <Button size="sm" variant="ghost" onClick={async () => { await api(`/api/voices/${edit.id}`, { method: "PATCH", body: { is_default: true } }); await load(edit.id); }}>Nastavit jako výchozí</Button>}
-                <Button size="sm" variant="ghost" onClick={async () => { if (confirm("Smazat profil?")) { try { await api(`/api/voices/${edit.id}`, { method: "DELETE" }); setSel(null); await load(); } catch (e) { toast("error", (e as Error).message); } } }}>Smazat</Button>
+                {!edit.is_default && <Button size="sm" variant="ghost" onClick={async () => { await api(`${API}/voices/${edit.id}`, { method: "PATCH", body: { is_default: true } }); await load(edit.id); }}>Nastavit jako výchozí</Button>}
+                <Button size="sm" variant="ghost" onClick={async () => { if (confirm("Smazat profil?")) { try { await api(`${API}/voices/${edit.id}`, { method: "DELETE" }); setSel(null); await load(); } catch (e) { toast("error", (e as Error).message); } } }}>Smazat</Button>
                 <Button size="sm" variant="primary" disabled={!dirty} loading={busy === "save"} onClick={save}>Uložit</Button>
               </>
             }

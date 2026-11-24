@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useState } from "react";
 import { Badge, Button, Card, Empty, Field, api, fmtDate, useCopy, useToast } from "@/components/ui";
 import type { Ctx } from "./Workspace";
@@ -26,7 +27,7 @@ export function ExportTab({ ctx }: { ctx: Ctx }) {
   async function publish(flag: boolean) {
     setBusy(true);
     try {
-      await api(`/api/videos/${data.video.id}/publish`, { body: { published: flag, date: new Date(date).toISOString(), platforms: plat, version: ver } });
+      await api(`${API}/videos/${data.video.id}/publish`, { body: { published: flag, date: new Date(date).toISOString(), platforms: plat, version: ver } });
       toast("ok", flag ? "Označeno jako publikované" : "Publikace zrušena");
       await ctx.reload();
     } catch (e) {
@@ -47,8 +48,8 @@ export function ExportTab({ ctx }: { ctx: Ctx }) {
               <select className="input w-auto" value={ver} onChange={(e) => setVer(Number(e.target.value))}>
                 {good.map((r) => <option key={r.version} value={r.version}>v{r.version} · {r.duration_s?.toFixed(1)} s · {r.status === "done" ? "kontrola OK" : "kontrola ✗"}</option>)}
               </select>
-              <a href={`/api/videos/${data.video.id}/files/mp4?v=${ver}`} className="inline-flex h-10 items-center rounded-[10px] bg-accent px-4 text-sm font-semibold text-white">Stáhnout MP4</a>
-              <a href={`/api/videos/${data.video.id}/files/sheet?v=${ver}`} className="surface inline-flex h-10 items-center rounded-[10px] px-4 text-sm font-semibold">Kontaktní arch</a>
+              <a href={`${API}/videos/${data.video.id}/files/mp4?v=${ver}`} className="inline-flex h-10 items-center rounded-[10px] bg-accent px-4 text-sm font-semibold text-white">Stáhnout MP4</a>
+              <a href={`${API}/videos/${data.video.id}/files/sheet?v=${ver}`} className="surface inline-flex h-10 items-center rounded-[10px] px-4 text-sm font-semibold">Kontaktní arch</a>
             </div>
           )}
         </Card>
@@ -72,7 +73,7 @@ export function ExportTab({ ctx }: { ctx: Ctx }) {
               ["spec", "video_spec.json", "co má vzniknout"],
               ["timeline", "timeline.json", "kdy co nastane (po renderu)"],
             ].map(([k, n, d]) => (
-              <a key={k} href={`/api/videos/${data.video.id}/files/${k}`} className="surface flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:border-accent">
+              <a key={k} href={`${API}/videos/${data.video.id}/files/${k}`} className="surface flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:border-accent">
                 <span><b>{n}</b><span className="text-3 block text-xs">{d}</span></span>↓
               </a>
             ))}

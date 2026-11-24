@@ -1,4 +1,5 @@
 "use client";
+import { go } from "@/lib/nav";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode, type ButtonHTMLAttributes } from "react";
 
 export function cx(...c: (string | false | null | undefined | 0)[]) {
@@ -204,7 +205,7 @@ export async function api<T = unknown>(url: string, opts: { method?: string; bod
   const ct = res.headers.get("content-type") || "";
   const data = ct.includes("json") ? await res.json() : await res.text();
   if (!res.ok) {
-    if (res.status === 401 && typeof window !== "undefined") window.location.href = "/login";
+    if (res.status === 401 && typeof window !== "undefined") go("/login");
     const msg = typeof data === "object" && data && "error" in data ? (data as { error: string }).error : `Chyba ${res.status}`;
     throw new Error(msg);
   }

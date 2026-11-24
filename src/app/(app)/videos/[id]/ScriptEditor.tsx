@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, Empty, Field, Modal, Slider, Toggle, api, cx, fmtDate, useToast } from "@/components/ui";
 import { VideoPreview } from "@/components/Preview";
@@ -64,7 +65,7 @@ export function ScriptEditor({ ctx }: { ctx: Ctx }) {
   }
   const save = () =>
     run("save", async () => {
-      await api(`/api/videos/${data.video.id}/script`, { method: "PUT", body: { script: s } });
+      await api(`${API}/videos/${data.video.id}/script`, { method: "PUT", body: { script: s } });
       setDirty(false);
       await ctx.reload();
     }, "Scénář uložen");
@@ -72,15 +73,15 @@ export function ScriptEditor({ ctx }: { ctx: Ctx }) {
   const generate = () =>
     run("gen", async () => {
       if (s && !confirm("Vygenerovat nový scénář? Současná verze zůstane v historii.")) return;
-      await api(`/api/videos/${data.video.id}/generate`, { method: "POST" });
+      await api(`${API}/videos/${data.video.id}/generate`, { method: "POST" });
       setDirty(false);
       await ctx.reload();
     }, "Scénář vygenerován");
 
   const approve = () =>
     run("approve", async () => {
-      if (dirty) await api(`/api/videos/${data.video.id}/script`, { method: "PUT", body: { script: s } });
-      await api(`/api/videos/${data.video.id}/approve`, { method: "POST" });
+      if (dirty) await api(`${API}/videos/${data.video.id}/script`, { method: "PUT", body: { script: s } });
+      await api(`${API}/videos/${data.video.id}/approve`, { method: "POST" });
       setDirty(false);
       await ctx.reload();
       ctx.goTab("voice");
@@ -93,7 +94,7 @@ export function ScriptEditor({ ctx }: { ctx: Ctx }) {
           <p>Claude napíše 60–80 slov v 5–8 scénách podle kapitoly, tónu a pravidel. Výstup se automaticky zkontroluje.</p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <Button variant="primary" loading={busy === "gen"} disabled={!ctx.keys.anthropic || !ctx.canEdit} onClick={generate}>Napsat scénář (Claude)</Button>
-            <Button loading={busy === "sample"} disabled={!ctx.canEdit} onClick={() => run("sample", async () => { await api(`/api/videos/${data.video.id}/script`, { method: "POST" }); await ctx.reload(); })}>Vložit ukázkový scénář</Button>
+            <Button loading={busy === "sample"} disabled={!ctx.canEdit} onClick={() => run("sample", async () => { await api(`${API}/videos/${data.video.id}/script`, { method: "POST" }); await ctx.reload(); })}>Vložit ukázkový scénář</Button>
             <Button disabled={!ctx.canEdit} onClick={() => { setS(normalizeScript({ id: data.video.number, title: data.video.title, slug: data.video.slug, chapter: data.video.chapter, hook_type: data.video.hook_type as Script["hook_type"], word_count: 0, cta: ctx.brand.cta.text, scenes: [1, 2, 3, 4, 5].map(emptyScene).map((x, i, a) => (i === a.length - 1 ? { ...x, pose: "Point_down" as const, template: "ebook_cta", params: [{ key: "cta", value: ctx.brand.cta.text }] } : x)), audio_parts: [{ part: 1, scenes: [1, 2], mood: "", stability: 0.45, tagged_text: "" }, { part: 2, scenes: [3, 4, 5], mood: "", stability: 0.5, tagged_text: "" }], sfx: [], caption: "", hashtags: [] })); setDirty(true); }}>Psát ručně</Button>
           </div>
           {!ctx.keys.anthropic && <p className="mt-3 text-xs">Pro generování přidej klíč v Nastavení → API klíče.</p>}
@@ -118,7 +119,7 @@ export function ScriptEditor({ ctx }: { ctx: Ctx }) {
           <Button size="sm" variant="ghost" onClick={() => setShowJson(true)}>JSON</Button>
           <Button size="sm" variant="dark" loading={busy === "save"} disabled={!dirty || disabled} onClick={save}>Uložit</Button>
           {locked ? (
-            <Button size="sm" loading={busy === "unlock"} disabled={disabled} onClick={() => confirm("Odemknout scénář? Změna textu znamená nové audio.") && run("unlock", async () => { await api(`/api/videos/${data.video.id}/unlock`, { method: "POST" }); await ctx.reload(); })}>🔓 Odemknout</Button>
+            <Button size="sm" loading={busy === "unlock"} disabled={disabled} onClick={() => confirm("Odemknout scénář? Změna textu znamená nové audio.") && run("unlock", async () => { await api(`${API}/videos/${data.video.id}/unlock`, { method: "POST" }); await ctx.reload(); })}>🔓 Odemknout</Button>
           ) : (
             <Button size="sm" variant="primary" loading={busy === "approve"} disabled={errors.length > 0 || disabled} onClick={approve} title={errors.length ? "Nejdřív oprav chyby" : ""}>Schválit ✓</Button>
           )}
@@ -328,7 +329,7 @@ export function ScriptEditor({ ctx }: { ctx: Ctx }) {
         <div className="mt-4 flex justify-end gap-2">
           <Button onClick={() => setRegen(null)}>Zrušit</Button>
           <Button variant="primary" loading={busy === "scene"} onClick={() => regen && run("scene", async () => {
-            const r = await api<{ scene: Scene }>(`/api/videos/${data.video.id}/scene`, { body: { n: regen.n, instruction: regen.instruction, script: s } });
+            const r = await api<{ scene: Scene }>(`${API}/videos/${data.video.id}/scene`, { body: { n: regen.n, instruction: regen.instruction, script: s } });
             update((x) => {
               const next = { ...x, scenes: x.scenes.map((sc) => (sc.n === regen.n ? r.scene : sc)) };
               return rebuildAudioParts(next, true);

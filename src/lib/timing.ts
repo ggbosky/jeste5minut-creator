@@ -1,7 +1,7 @@
 // Časování slov: ElevenLabs Scribe (STT) se zarovnáním na text scénáře, jinak náhradně podle slabik v úsecích řeči.
 import type { TimelineWord } from "../render/timeline";
 import { normWord, syllables } from "./script";
-import { speechSegments } from "./audio";
+import { speechSegments } from "./dsp";
 import type { SttWord } from "./elevenlabs";
 
 type W = { w: string; scene: number; part: number };

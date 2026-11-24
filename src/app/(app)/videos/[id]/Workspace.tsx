@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -53,7 +54,7 @@ export function Workspace(props: { id: number; role: string; cfg: PreviewConfig;
 
   const reload = useCallback(async () => {
     try {
-      setData(await api<VideoData>(`/api/videos/${props.id}`));
+      setData(await api<VideoData>(`${API}/videos/${props.id}`));
     } catch (e) {
       toast("error", (e as Error).message);
     }
@@ -98,7 +99,7 @@ export function Workspace(props: { id: number; role: string; cfg: PreviewConfig;
           {props.role !== "viewer" && (
             <Button variant="ghost" size="sm" onClick={async () => {
               if (!confirm(`Smazat video ${v.number} „${v.title}“ včetně audia a renderů?`)) return;
-              await api(`/api/videos/${v.id}`, { method: "DELETE" });
+              await api(`${API}/videos/${v.id}`, { method: "DELETE" });
               router.push("/videos");
             }}>Smazat</Button>
           )}

@@ -1,4 +1,5 @@
 "use client";
+import { API, STATIC } from "@/lib/nav";
 import { useEffect, useState } from "react";
 import { Badge, Button, Card, Empty, Field, api, cx, fmtDate, useToast } from "@/components/ui";
 import { RenderBadge } from "@/components/bits";
@@ -21,7 +22,7 @@ export function RenderTab({ ctx }: { ctx: Ctx }) {
     let alive = true;
     const tick = async () => {
       try {
-        const r = await api<Live>(`/api/renders/${running.id}`);
+        const r = await api<Live>(`${API}/renders/${running.id}`);
         if (!alive) return;
         setLive(r);
         if (r.status !== "queued" && r.status !== "running") {
@@ -46,7 +47,7 @@ export function RenderTab({ ctx }: { ctx: Ctx }) {
   async function start() {
     setBusy("render");
     try {
-      await api(`/api/videos/${data.video.id}/render`, { body: {} });
+      await api(`${API}/videos/${data.video.id}/render`, { body: {} });
       await ctx.reload();
     } catch (e) {
       toast("error", (e as Error).message);
@@ -57,7 +58,7 @@ export function RenderTab({ ctx }: { ctx: Ctx }) {
   async function revise(render: boolean) {
     setBusy(render ? "revise" : "revise-only");
     try {
-      const r = await api<{ summary: string; render: { version: number } | null }>(`/api/videos/${data.video.id}/revise`, { body: { comments, render_version: current?.version, render } });
+      const r = await api<{ summary: string; render: { version: number } | null }>(`${API}/videos/${data.video.id}/revise`, { body: { comments, render_version: current?.version, render } });
       toast("ok", r.summary + (r.render ? ` · spuštěn render v${r.render.version}` : ""));
       setComments([{ scene: null, comment: "" }]);
       await ctx.reload();
@@ -87,7 +88,7 @@ export function RenderTab({ ctx }: { ctx: Ctx }) {
               actions={<RenderBadge status={current.status} />}
             >
               <div className="flex flex-col gap-4 md:flex-row">
-                <video key={current.version} controls playsInline className="aspect-[9/16] w-full max-w-[300px] rounded-xl bg-black" src={`/api/videos/${data.video.id}/files/mp4?v=${current.version}&inline=1`} />
+                <video key={current.version} controls playsInline className="aspect-[9/16] w-full max-w-[300px] rounded-xl bg-black" src={`${API}/videos/${data.video.id}/files/mp4?v=${current.version}&inline=1`} />
                 <div className="min-w-0 flex-1">
                   <h3 className="mb-2 text-sm font-bold">Automatická kontrola</h3>
                   <ul className="space-y-1.5 text-sm">
@@ -100,9 +101,9 @@ export function RenderTab({ ctx }: { ctx: Ctx }) {
                   </ul>
                   {current.notes && <p className="text-3 mt-3 text-xs">Poznámka: {current.notes}</p>}
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <a href={`/api/videos/${data.video.id}/files/mp4?v=${current.version}`} className="inline-flex h-8 items-center rounded-[10px] bg-accent px-3 text-[13px] font-semibold text-white">Stáhnout MP4</a>
-                    <a href={`/api/videos/${data.video.id}/files/timeline`} className="surface inline-flex h-8 items-center rounded-[10px] px-3 text-[13px] font-semibold">timeline.json</a>
-                    <a href={`/api/videos/${data.video.id}/files/spec`} className="surface inline-flex h-8 items-center rounded-[10px] px-3 text-[13px] font-semibold">video_spec.json</a>
+                    <a href={`${API}/videos/${data.video.id}/files/mp4?v=${current.version}`} className="inline-flex h-8 items-center rounded-[10px] bg-accent px-3 text-[13px] font-semibold text-white">Stáhnout MP4</a>
+                    <a href={`${API}/videos/${data.video.id}/files/timeline`} className="surface inline-flex h-8 items-center rounded-[10px] px-3 text-[13px] font-semibold">timeline.json</a>
+                    <a href={`${API}/videos/${data.video.id}/files/spec`} className="surface inline-flex h-8 items-center rounded-[10px] px-3 text-[13px] font-semibold">video_spec.json</a>
                   </div>
                 </div>
               </div>
@@ -116,9 +117,9 @@ export function RenderTab({ ctx }: { ctx: Ctx }) {
           )}
 
           {current?.has_sheet ? (
-            <Card title="Kontaktní arch" subtitle="Snímek ze středu každé scény přímo z MP4 — čitelnost, zóny, zelený lem, synchron">
+            <Card title="Kontaktní arch" subtitle={`Snímek ze středu každé scény${STATIC ? "" : " přímo z MP4"} — čitelnost, zóny, zelený lem, synchron`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/api/videos/${data.video.id}/files/sheet?v=${current.version}&inline=1`} alt="Kontaktní arch" className="w-full rounded-xl" />
+              <img src={`${API}/videos/${data.video.id}/files/sheet?v=${current.version}&inline=1`} alt="Kontaktní arch" className="w-full rounded-xl" />
             </Card>
           ) : null}
         </div>

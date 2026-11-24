@@ -2,7 +2,8 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-export const SR = 48000;
+export { SR } from "./dsp";
+import { SR } from "./dsp";
 
 export function sh(cmd: string, args: string[], input?: Buffer): Promise<{ stdout: Buffer; stderr: string }> {
   return new Promise((resolve, reject) => {
@@ -91,109 +92,4 @@ export async function preparePart(input: string, output: string, o: { thresholdD
   return { measured_lufs: m.lufs };
 }
 
-/** Úseky řeči podle prahu (náhrada za ffmpeg silencedetect, počítáno přímo z PCM). */
-export function speechSegments(pcm: Float32Array, rate: number, thresholdDb: number, minSilenceS: number) {
-  const win = Math.round(rate * 0.01);
-  const thr = Math.pow(10, thresholdDb / 20);
-  const voiced: boolean[] = [];
-  for (let i = 0; i < pcm.length; i += win) {
-    let s = 0;
-    const end = Math.min(pcm.length, i + win);
-    for (let j = i; j < end; j++) s += pcm[j] * pcm[j];
-    voiced.push(Math.sqrt(s / Math.max(1, end - i)) > thr);
-  }
-  const segs: { start: number; end: number }[] = [];
-  let cur: { start: number; end: number } | null = null;
-  const minGap = Math.round(minSilenceS / 0.01);
-  let silence = 0;
-  voiced.forEach((v, k) => {
-    const t = k * 0.01;
-    if (v) {
-      if (!cur) cur = { start: t, end: t + 0.01 };
-      else cur.end = t + 0.01;
-      silence = 0;
-    } else if (cur) {
-      silence++;
-      if (silence >= minGap) {
-        segs.push(cur);
-        cur = null;
-      }
-    }
-  });
-  if (cur) segs.push(cur);
-  return segs;
-}
-
-export function lastSpeechEnd(pcm: Float32Array, rate: number, thresholdDb: number) {
-  const segs = speechSegments(pcm, rate, thresholdDb, 0.12);
-  return segs.length ? segs[segs.length - 1].end : 0;
-}
-
-/** RMS v dB pro každý snímek videa (pro animaci pusy). */
-export function rmsPerFrame(pcm: Float32Array, rate: number, fps: number, frames: number): Float32Array {
-  const out = new Float32Array(frames);
-  const spf = rate / fps;
-  for (let f = 0; f < frames; f++) {
-    const a = Math.floor(f * spf), b = Math.min(pcm.length, Math.floor((f + 1) * spf));
-    let s = 0;
-    for (let i = a; i < b; i++) s += pcm[i] * pcm[i];
-    const rms = b > a ? Math.sqrt(s / (b - a)) : 0;
-    out[f] = rms > 0 ? 20 * Math.log10(rms) : -120;
-  }
-  return out;
-}
-
-// ---------------- zvukové efekty generované v kódu (bez licencí) ----------------
-function synth(kind: string, rate = SR): Float32Array {
-  const dur = kind === "swoosh" ? 0.38 : kind === "pop" ? 0.14 : 0.035;
-  const n = Math.round(dur * rate);
-  const out = new Float32Array(n);
-  let seed = 12345;
-  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff) * 2 - 1;
-  let lp = 0, phase = 0;
-  for (let i = 0; i < n; i++) {
-    const t = i / rate;
-    if (kind === "pop") {
-      const f = 900 * Math.exp(-t * 28) + 180;
-      phase += (2 * Math.PI * f) / rate;
-      out[i] = Math.sin(phase) * Math.exp(-t * 30) * 0.9;
-    } else if (kind === "tick") {
-      phase += (2 * Math.PI * 2400) / rate;
-      out[i] = (Math.sin(phase) * 0.7 + rnd() * 0.3) * Math.exp(-t * 160) * 0.8;
-    } else {
-      const p = t / dur;
-      const cutoff = 0.02 + 0.25 * Math.sin(Math.PI * p);
-      lp += cutoff * (rnd() - lp);
-      out[i] = lp * Math.sin(Math.PI * p) ** 2 * 2.2;
-    }
-  }
-  return out;
-}
-
-const sfxCache = new Map<string, Float32Array>();
-export function sfxPcm(kind: string) {
-  if (!sfxCache.has(kind)) sfxCache.set(kind, synth(kind));
-  return sfxCache.get(kind)!;
-}
-
-/** Mix hlasu a efektů bez normalizace + měkký limiter. */
-export function mix(voice: Float32Array, sfx: { type: string; t: number }[], rate = SR, sfxGainDb = -10): Float32Array {
-  const out = new Float32Array(voice);
-  const g = Math.pow(10, sfxGainDb / 20);
-  for (const s of sfx) {
-    const p = sfxPcm(s.type);
-    const off = Math.round(s.t * rate);
-    for (let i = 0; i < p.length && off + i < out.length; i++) if (off + i >= 0) out[off + i] += p[i] * g;
-  }
-  // limiter: strop -1 dBFS s měkkým kolenem
-  const ceil = Math.pow(10, -1 / 20);
-  for (let i = 0; i < out.length; i++) {
-    const x = out[i];
-    const ax = Math.abs(x);
-    if (ax > ceil * 0.9) {
-      const over = ax - ceil * 0.9;
-      out[i] = Math.sign(x) * (ceil * 0.9 + (ceil * 0.1) * Math.tanh(over / (ceil * 0.1)));
-    }
-  }
-  return out;
-}
+export { speechSegments, lastSpeechEnd, rmsPerFrame, sfxPcm, mix } from "./dsp";

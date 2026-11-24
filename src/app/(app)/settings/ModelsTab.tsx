@@ -1,4 +1,6 @@
 "use client";
+import { API } from "@/lib/nav";
+import Link from "next/link";
 import { useState } from "react";
 import { Button, Card, Field, Spinner, Toggle, api, useToast } from "@/components/ui";
 import { CLAUDE_MODELS, EFFORT_LEVELS, LLM_TASKS } from "@/lib/constants";
@@ -30,7 +32,7 @@ export function ModelsTab() {
             <Button size="sm" loading={loading} onClick={async () => {
               setLoading(true);
               try {
-                setApiModels((await api<{ models: { id: string; display_name: string }[] }>("/api/llm/models")).models);
+                setApiModels((await api<{ models: { id: string; display_name: string }[] }>(`${API}/llm/models`)).models);
                 toast("ok", "Seznam modelů načten z API");
               } catch (e) {
                 toast("error", (e as Error).message);
@@ -84,7 +86,7 @@ export function ModelsTab() {
           <Field label="Doplněk systémového promptu" hint="Přidá se na konec instrukcí pro všechny úlohy. Hraj si — např. styl humoru, oblíbené formulace.">
             <textarea className="input" rows={4} value={v.system_prompt_extra} onChange={(e) => set({ system_prompt_extra: e.target.value })} />
           </Field>
-          <a href="/lab?tab=llm" className="inline-block text-sm font-semibold text-accent">Vyzkoušet v Laboratoři →</a>
+          <Link href="/lab?tab=llm" className="inline-block text-sm font-semibold text-accent">Vyzkoušet v Laboratoři →</Link>
         </div>
       </Card>
     </div>

@@ -1,4 +1,5 @@
 "use client";
+import { API, go } from "@/lib/nav";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -27,7 +28,7 @@ export function Sidebar({ user }: { user: { name: string; email: string; role: s
   useEffect(() => {
     try { setTheme(localStorage.getItem("j5m-theme") || "auto"); } catch {}
     let alive = true;
-    const tick = () => api<{ running: boolean; queued: number }>("/api/queue").then((q) => alive && setQueue(q)).catch(() => {});
+    const tick = () => api<{ running: boolean; queued: number }>(`${API}/queue`).then((q) => alive && setQueue(q)).catch(() => {});
     tick();
     const id = setInterval(tick, 5000);
     return () => { alive = false; clearInterval(id); };
@@ -95,7 +96,7 @@ export function Sidebar({ user }: { user: { name: string; email: string; role: s
               {theme === "auto" ? "◐ Auto" : theme === "dark" ? "● Tmavý" : "○ Světlý"}
             </button>
             <button
-              onClick={async () => { await api("/api/auth/logout", { method: "POST" }); window.location.href = "/login"; }}
+              onClick={async () => { await api(`${API}/auth/logout`, { method: "POST" }); go("/login"); }}
               className="flex-1 rounded-lg px-2 py-1.5 text-xs text-white/60 hover:bg-white/5 hover:text-white"
             >
               Odhlásit

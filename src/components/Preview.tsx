@@ -1,4 +1,5 @@
 "use client";
+import { API } from "@/lib/nav";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { VideoSpec } from "@/lib/outputs";
 import { estimatedTimeline, type Timeline } from "@/render/timeline";
@@ -23,8 +24,8 @@ export function loadAssets(poseKeys: string[], hasCover: boolean, version = ""):
   cache.key = key;
   cache.promise = (async () => {
     const poses: Assets["poses"] = {};
-    await Promise.all(poseKeys.map(async (k) => (poses[k] = await img(`/api/poses/${k}?v=${version}`))));
-    const cover = hasCover ? await img(`/api/assets/cover?v=${version}`) : null;
+    await Promise.all(poseKeys.map(async (k) => (poses[k] = await img(`${API}/poses/${k}?v=${version}`))));
+    const cover = hasCover ? await img(`${API}/assets/cover?v=${version}`) : null;
     if (document.fonts) await Promise.all(["800 40px Inter", "700 40px Inter", "600 40px Inter"].map((f) => document.fonts.load(f).catch(() => null)));
     return { poses, cover };
   })();
