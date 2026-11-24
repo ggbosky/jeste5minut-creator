@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "next start -p 3000",
+    "start": "next start",
     "typecheck": "tsc --noEmit",
     "render": "tsx scripts/render-cli.ts"
   },
@@ -28,5 +28,8 @@
     "tailwindcss": "^4.3.5",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=22.13"
   }
 }

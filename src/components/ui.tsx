@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode, type ButtonHTMLAttributes } from "react";
 
-export function cx(...c: (string | false | null | undefined)[]) {
+export function cx(...c: (string | false | null | undefined | 0)[]) {
   return c.filter(Boolean).join(" ");
 }
 
