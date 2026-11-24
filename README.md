@@ -94,7 +94,7 @@ npm run web:build     # → dist-web/
 npm run web:preview   # http://localhost:4173
 ```
 
-Nasazení: workflow `.github/workflows/pages.yml` při pushi do `main` sestaví `dist-web/` a nasadí ho.
+Nasazení: workflow `.github/workflows/pages.yml` při pushi do `main` (nebo vývojové větve) sestaví `dist-web/` a nasadí ho.
 Jednou je potřeba v repozitáři zapnout **Settings → Pages → Source: GitHub Actions**.
 
 ## Architektura
